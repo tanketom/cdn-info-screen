@@ -1,12 +1,14 @@
 body {
     background-color: black;
     max-width: 2048px;
+    font-size: 300%;
   }
   
 h1 {
     color: white;
     text-align: center;
-    font: Arcade, "Courier New", Courier, monospace;
+    font: "Arcade", "Courier New", Courier, monospace;
+    font-size: 200%:
   }
 
 .center {

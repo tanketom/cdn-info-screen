@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 body {
     background-color: black;
     max-width: 2048px;
@@ -7,8 +9,9 @@ body {
 h1 {
     color: white;
     text-align: center;
-    font: "Arcade", "Courier New", Courier, monospace;
-    font-size: 200%:
+    font-family: "Press Start 2P", system-ui;
+    font-weight: 400;
+    font-style: normal;
   }
 
 .center {
@@ -18,9 +21,8 @@ h1 {
   width: 50%;
 }
 
-@font-face {
-    font-family: Arcade;
-    src: url("ARCADE_N.TTF") format('truetype');
-    font-weight: bold;
-    font-style: normal;
+.press-start-2p-regular {
+  font-family: "Press Start 2P", system-ui;
+  font-weight: 400;
+  font-style: normal;
 }

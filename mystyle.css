@@ -6,6 +6,7 @@ body {
 h1 {
     color: white;
     text-align: center;
+    font: Arcade;
   }
 
 .center {
@@ -13,4 +14,11 @@ h1 {
   margin-left: auto;
   margin-right: auto;
   width: 50%;
+}
+
+@font-face {
+    font-family: Arcade;
+    src: url("ARCADE_N.TTF") format('truetype');
+    font-weight: bold;
+    font-style: normal;
 }

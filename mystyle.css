@@ -1,14 +1,14 @@
 body {
     background-color: black;
+    max-width: 2048px;
   }
   
 h1 {
     color: white;
     margin-left: 20px;
-  }
-
-p {
-    color: white;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
   }
 
 .center {

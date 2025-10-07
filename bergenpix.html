@@ -130,69 +130,70 @@
             const imageEl = document.getElementById('image');
             const descriptionEl = document.getElementById('description');
 
-            // The public Atom feed for the Pixelfed profile
             const pixelfedUser = 'bergenpix';
-            const atomFeedUrl = `https://pixelfed.social/users/${pixelfedUser}.atom`;
-
-            // Proxy has been removed as per the request.
-            // This will attempt a direct fetch to the Pixelfed server.
+            const pixelfedHost = 'pixelfed.social';
 
             const fetchAndDisplayImage = async () => {
                 try {
-                    // Fetching directly from the Pixelfed Atom feed URL.
-                    const response = await fetch(atomFeedUrl);
-                    if (!response.ok) {
-                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    // --- STEP 1: Look up the user's account ID from their username ---
+                    const lookupResponse = await fetch(`https://${pixelfedHost}/api/v1/accounts/lookup?acct=${pixelfedUser}`);
+                    if (!lookupResponse.ok) {
+                        throw new Error(`Failed to look up user ID: ${lookupResponse.statusText}`);
                     }
-                    const xmlText = await response.text();
+                    const accountInfo = await lookupResponse.json();
+                    const userId = accountInfo.id;
 
-                    // Parse the XML feed data
-                    const parser = new DOMParser();
-                    const xmlDoc = parser.parseFromString(xmlText, "application/xml");
-
-                    const entries = xmlDoc.querySelectorAll("entry");
-                    if (entries.length === 0) {
-                        throw new Error('No posts were found in the feed.');
+                    // --- STEP 2: Fetch the user's statuses (posts) using their ID ---
+                    const statusesResponse = await fetch(`https://${pixelfedHost}/api/v1/accounts/${userId}/statuses?exclude_replies=true&limit=40`);
+                    if (!statusesResponse.ok) {
+                        throw new Error(`Failed to fetch user statuses: ${statusesResponse.statusText}`);
                     }
+                    const statuses = await statusesResponse.json();
 
-                    // Pick a random entry from the feed
-                    const randomIndex = Math.floor(Math.random() * entries.length);
-                    const randomEntry = entries[randomIndex];
+                    // --- STEP 3: Filter for posts that contain images ---
+                    const imagePosts = statuses.filter(status => 
+                        status.media_attachments && status.media_attachments.length > 0 && status.media_attachments[0].type === 'image'
+                    );
 
-                    // Find the image URL within the post data
-                    const imageUrl = randomEntry.querySelector('link[rel="enclosure"]')?.getAttribute('href');
-                    if (!imageUrl) {
-                        throw new Error('Could not find an image URL in the selected post.');
+                    if (imagePosts.length === 0) {
+                        throw new Error('No recent image posts were found for this user.');
                     }
 
-                    // Find the description text
-                    const descriptionText = randomEntry.querySelector('summary')?.textContent || 'No description available.';
+                    // --- STEP 4: Pick a random post and extract the data ---
+                    const randomPost = imagePosts[Math.floor(Math.random() * imagePosts.length)];
                     
-                    // Set the image source and description text
+                    const imageUrl = randomPost.media_attachments[0].url;
+                    
+                    // The description text is HTML, so we strip the tags for clean display.
+                    const descriptionHtml = randomPost.content;
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = descriptionHtml;
+                    const descriptionText = tempDiv.textContent || tempDiv.innerText || 'No description available.';
+
+                    // --- STEP 5: Display the image and description ---
                     imageEl.src = imageUrl;
                     descriptionEl.textContent = descriptionText;
 
-                    // Wait for the new image to fully load before showing it
                     imageEl.onload = () => {
                         loader.style.display = 'none';
                         errorDisplay.style.display = 'none';
-                        content.style.display = 'flex'; // Use 'flex' as defined in CSS
+                        content.style.display = 'flex';
                     };
                     
                     imageEl.onerror = () => {
                         throw new Error('The image resource failed to load.');
-                    }
+                    };
 
                 } catch (error) {
-                    console.error("Error fetching or displaying Pixelfed data:", error);
-                    // If anything goes wrong, show the error message
+                    console.error("Error fetching or displaying Pixelfed data via API:", error);
                     loader.style.display = 'none';
                     content.style.display = 'none';
                     errorDisplay.style.display = 'block';
+                    // Display the specific error message for easier debugging
+                    errorDisplay.querySelector('p').textContent = error.message;
                 }
             };
 
-            // Run the function to load the content
             fetchAndDisplayImage();
         });
     </script>

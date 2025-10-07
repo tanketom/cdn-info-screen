@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bergenpix Display</title>
+    <style>
+        /* Import a clean, readable font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        /* Basic setup for transparency and text color */
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Hide scrollbars */
+        }
+
+        /* The main container with the requested dimensions */
+        #screen {
+            width: 2048px;
+            height: 2560px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 80px;
+            position: relative;
+        }
+
+        /* * This media query helps preview the page on a smaller screen.
+         * It scales the content down to fit your browser window.
+         * On the actual 2048x2560 info screen, this will not apply.
+         */
+        @media (max-width: 2047px), (max-height: 2559px) {
+            body {
+                /* Center the scaled screen in the viewport */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: #1a1a1a; /* Dark background for better previewing */
+            }
+            #screen {
+                transform-origin: top left;
+                /* Calculate scale factor to fit within the viewport while maintaining aspect ratio */
+                --scale-x: calc(100vw / 2048);
+                --scale-y: calc(100vh / 2560);
+                --scale: min(var(--scale-x), var(--scale-y));
+                transform: scale(var(--scale));
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                margin-left: calc(-2048px * var(--scale) / 2);
+                margin-top: calc(-2560px * var(--scale) / 2);
+            }
+        }
+
+        /* The main content container */
+        #content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            gap: 40px;
+        }
+
+        /* Styling for the image */
+        #image {
+            max-width: 100%;
+            max-height: 75%; /* Allocate 75% of the screen height for the image */
+            object-fit: contain;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Styling for the description text */
+        #description {
+            font-size: 48px;
+            line-height: 1.5;
+            max-width: 90%;
+            font-weight: 400;
+            /* Add a subtle text shadow for better readability */
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+        }
+
+        /* Styling for the loading and error messages */
+        #loader h1, #error h1 {
+            font-size: 64px;
+            font-weight: 700;
+        }
+
+        #error p {
+            font-size: 32px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="screen">
+        <!-- Loading message shown initially -->
+        <div id="loader">
+            <h1>Loading random image from @bergenpix...</h1>
+        </div>
+
+        <!-- Content container, hidden by default -->
+        <div id="content" style="display: none;">
+            <img id="image" src="" alt="Image from Pixelfed">
+            <p id="description"></p>
+        </div>
+
+        <!-- Error message, hidden by default -->
+        <div id="error" style="display: none;">
+            <h1>Could not load image.</h1>
+            <p>Please check the internet connection and try reloading the page.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('loader');
+            const content = document.getElementById('content');
+            const errorDisplay = document.getElementById('error');
+            const imageEl = document.getElementById('image');
+            const descriptionEl = document.getElementById('description');
+
+            // The public Atom feed for the Pixelfed profile
+            const pixelfedUser = 'bergenpix';
+            const atomFeedUrl = `https://pixelfed.social/users/${pixelfedUser}.atom`;
+
+            // Proxy has been removed as per the request.
+            // This will attempt a direct fetch to the Pixelfed server.
+
+            const fetchAndDisplayImage = async () => {
+                try {
+                    // Fetching directly from the Pixelfed Atom feed URL.
+                    const response = await fetch(atomFeedUrl);
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok: ${response.statusText}`);
+                    }
+                    const xmlText = await response.text();
+
+                    // Parse the XML feed data
+                    const parser = new DOMParser();
+                    const xmlDoc = parser.parseFromString(xmlText, "application/xml");
+
+                    const entries = xmlDoc.querySelectorAll("entry");
+                    if (entries.length === 0) {
+                        throw new Error('No posts were found in the feed.');
+                    }
+
+                    // Pick a random entry from the feed
+                    const randomIndex = Math.floor(Math.random() * entries.length);
+                    const randomEntry = entries[randomIndex];
+
+                    // Find the image URL within the post data
+                    const imageUrl = randomEntry.querySelector('link[rel="enclosure"]')?.getAttribute('href');
+                    if (!imageUrl) {
+                        throw new Error('Could not find an image URL in the selected post.');
+                    }
+
+                    // Find the description text
+                    const descriptionText = randomEntry.querySelector('summary')?.textContent || 'No description available.';
+                    
+                    // Set the image source and description text
+                    imageEl.src = imageUrl;
+                    descriptionEl.textContent = descriptionText;
+
+                    // Wait for the new image to fully load before showing it
+                    imageEl.onload = () => {
+                        loader.style.display = 'none';
+                        errorDisplay.style.display = 'none';
+                        content.style.display = 'flex'; // Use 'flex' as defined in CSS
+                    };
+                    
+                    imageEl.onerror = () => {
+                        throw new Error('The image resource failed to load.');
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching or displaying Pixelfed data:", error);
+                    // If anything goes wrong, show the error message
+                    loader.style.display = 'none';
+                    content.style.display = 'none';
+                    errorDisplay.style.display = 'block';
+                }
+            };
+
+            // Run the function to load the content
+            fetchAndDisplayImage();
+        });
+    </script>
+</body>
+</html>
+

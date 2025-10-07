@@ -132,11 +132,25 @@
 
             const pixelfedUser = 'bergenpix';
             const pixelfedHost = 'pixelfed.social';
+            
+            // --- IMPORTANT ---
+            // Follow the guide in `pixelfed_guide.md` to get your access token
+            // and paste it here between the single quotes.
+            const accessToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIyMzAxMiIsImp0aSI6ImEyZTNlNjZkNmMzODQ3NmFhNjYwZjQyY2MwMzA4MjZhYjk3MmQxNjM0NDgyNzM1YTk3NWIyMTU1ZDQxMzMxNTQ4MDc5ZWE2MGQ0NDVlMmUzIiwiaWF0IjoxNzU5ODQzODkzLjM5NTQ0NywibmJmIjoxNzU5ODQzODkzLjM5NTQ0OSwiZXhwIjoxNzkxMzc5ODkzLjM5MzMxLCJzdWIiOiIzMTc2MzciLCJzY29wZXMiOlsicmVhZCJdfQ.T_faUZmCgfq93MKqHNKLtH1OT64jmrS3yBN1MTEgBAHeBSwwwaqm73KJ_zElqnp0ZHjVre-zeDSF7yYHKKevli0MhmxcxO769WwCDDT00V5vY3W3dsWlyIk8Fw4JuRf7T0WY0BWC3_JZEodr3fPa7g0P1um7-L5BnhpBuu0d3tsglidoKnoziVPCVDgFJbO5W7B7MhiLGp4dSprkV65_FGrhUks6HMBpn0fgUCV8YJjJMO3PUQcx3jRFPbNW6coU2zzzw5QB2K2lF-6Lw1HZgq0CWobIMEwllGg-VFi94lJ_AnNzB--p5iwOSx0QYIVX7EXCCCHrK3-GGHPZLsJHRNSxJlKIhkiainLRfoxAqzIY_u1SQlsOja532cwdDwW8LE7hTXM22gT5LH3zmu1sxJt26CTlDImJEuzfBtN6oDs49L8X_rp9I_lLMet8RAgnAyfcx_6staWBDObP4BcBAsKAMHCWH80BNlGIMwLv_PlwWPnWSgy_c5tcTDdL6VzJEIZW8igLKaXzldCRXFANpQPgwDYXpoQPA-bBdIyqkEMZj34SykVp11oCAtn61oCEeSsoV2rZaqPiwJDroJMVvWUpWyj9GUh_I-mjdYFMkaYU4FAdsd2kZvRTafnkv04-y3JlTMBN89j0X4zMM9xZ6NTqQcqsGBaGnuyu5fWLuCA'; 
 
             const fetchAndDisplayImage = async () => {
                 try {
+                    // Check if the access token has been added.
+                    if (accessToken === '' || accessToken === 'PASTE_YOUR_ACCESS_TOKEN_HERE') {
+                        throw new Error('Pixelfed access token is missing. Please add it to the script.');
+                    }
+                    
+                    const apiHeaders = {
+                        'Authorization': `Bearer ${accessToken}`
+                    };
+
                     // --- STEP 1: Look up the user's account ID from their username ---
-                    const lookupResponse = await fetch(`https://${pixelfedHost}/api/v1/accounts/lookup?acct=${pixelfedUser}`);
+                    const lookupResponse = await fetch(`https://${pixelfedHost}/api/v1/accounts/lookup?acct=${pixelfedUser}`, { headers: apiHeaders });
                     if (!lookupResponse.ok) {
                         throw new Error(`Failed to look up user ID: ${lookupResponse.statusText}`);
                     }
@@ -144,7 +158,7 @@
                     const userId = accountInfo.id;
 
                     // --- STEP 2: Fetch the user's statuses (posts) using their ID ---
-                    const statusesResponse = await fetch(`https://${pixelfedHost}/api/v1/accounts/${userId}/statuses?exclude_replies=true&limit=40`);
+                    const statusesResponse = await fetch(`https://${pixelfedHost}/api/v1/accounts/${userId}/statuses?exclude_replies=true&limit=40`, { headers: apiHeaders });
                     if (!statusesResponse.ok) {
                         throw new Error(`Failed to fetch user statuses: ${statusesResponse.statusText}`);
                     }

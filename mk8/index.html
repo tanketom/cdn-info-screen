@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Mario Kart Season Rankings</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* CRITICAL: Allow the page to be responsive. */
+        html, body {
+            min-height: 100vh;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            /* Ensure maximum readability */
+            font-family: 'Inter', sans-serif;
+            background-color: transparent; /* Mandatory transparent background */
+            overflow-x: hidden; /* Prevent horizontal scrolling */
+        }
+        /* Custom styles for the Leaderboard layout */
+        .ranking-item {
+            transition: transform 0.2s, box-shadow 0.2s;
+            /* Simple, clean shadow for better contrast */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .ranking-item:hover {
+            transform: scale(1.005);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mario-red': '#E40017',
+                        'star-yellow': '#FFD700',
+                        // Custom colors for Top 3 circles
+                        'gold-badge': '#FFD700',
+                        'silver-badge': '#C0C0C0',
+                        'bronze-badge': '#CD7F32',
+                    }
+                }
+            }
+        }
+
+        // --- UPDATED: All data contained within a single object ---
+        const rankingData = {
+            lastUpdated: "November 26, 2025, 17:30 CET",
+            rankings: [
+                {rank:1,name:"Tim",tps:102,gps:52,character:"Yoshi"},
+                {rank:2,name:"Jack",tps:95,gps:48.5,character:"Donkey Kong"},
+                {rank:3,name:"Magnus",tps:94,gps:48,character:"Dry Bones"},
+                {rank:4,name:"Tegan",tps:91,gps:46.5,character:"Donkey Kong"},
+                {rank:5,name:"Dom",tps:77,gps:39.5,character:"Shy Guy"},
+                {rank:6,name:"Tom",tps:72,gps:37,character:"Baby Rosalina"},
+                {rank:7,name:"Hanna",tps:61,gps:31.5,character:"Donkey Kong"},
+                {rank:8,name:"Andreas",tps:59,gps:30.5,character:"Yoshi"},
+                {rank:9,name:"Ola",tps:0,gps:0,character:""}
+            ]
+        };
+
+        // Defines the circle badge style for the top 3
+        const badgeStyles = {
+            1: 'bg-gold-badge text-black',
+            2: 'bg-silver-badge text-black',
+            3: 'bg-bronze-badge text-white',
+        };
+        
+        function getRankIcon(rank) {
+            // Use cart icon for ranks outside the top 3 circle treatment
+            return '🏎️';
+        }
+
+        function renderRankings() {
+            const container = document.getElementById('leaderboard-container');
+            const timeElement = document.getElementById('last-updated-time');
+            
+            // Set the static "Last Updated" time from the rankingData object
+            if (timeElement) {
+                timeElement.textContent = rankingData.lastUpdated;
+            }
+
+            if (!container) return;
+
+            // Clear existing content
+            container.innerHTML = '';
+
+            rankingData.rankings.forEach(player => { // Read from rankingData.rankings
+                const isTop3 = player.rank <= 3;
+
+                // Define size classes for differentiation
+                const nameTextSize = isTop3 ? 'text-7xl' : 'text-5xl';
+                const paddingClass = isTop3 ? 'p-12 mb-10' : 'p-8 mb-6'; // Larger padding for top 3
+                
+                // NEW: Score Size Classes for visual hierarchy
+                const mainScoreSize = isTop3 ? 'text-9xl' : 'text-7xl'; // Largest for GPScore™
+                const secondaryScoreSize = isTop3 ? 'text-6xl' : 'text-4xl'; // Smaller for Total Score
+                
+                // Use a standard dark background for all rows
+                const rowBgClass = isTop3 ? 'bg-gray-800' : 'bg-gray-900';
+                
+                // Enforce white and bold for all names
+                const nameColorClass = 'text-white font-extrabold';
+                
+                let rankBlockHtml;
+                if (isTop3) {
+                    // Top 3: Colored Circle Badge on the left
+                    const badgeClass = badgeStyles[player.rank];
+                    // Using fluid sizing for the badge dimensions (w-36 h-36 in this context is relative to container)
+                    rankBlockHtml = `
+                        <!-- Rank Badge (Colored Circle) -->
+                        <div class="w-[10rem] text-center flex justify-center items-center mr-10">
+                            <div class="w-36 h-36 rounded-full flex items-center justify-center ${badgeClass} shadow-2xl">
+                                <span class="text-7xl font-black">${player.rank}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Ranks 4-10: Simple rank number and icon
+                    const icon = getRankIcon(player.rank);
+                    // Rank text size remains large but scaled down relative to Top 3
+                    const rankTextSize = 'text-6xl'; 
+                    rankBlockHtml = `
+                        <!-- Rank & Icon (Regular) -->
+                        <div class="w-1/12 text-center font-extrabold ${rankTextSize}">
+                            ${icon}
+                        </div>
+                        <div class="w-1/12 text-center font-extrabold ${rankTextSize} -ml-6">
+                            ${player.rank}.
+                        </div>
+                    `;
+                }
+
+                // Character Image HTML
+                // Note: Replaces spaces in character name with title-casing for URL safety
+                const characterNameFormatted = player.character 
+                    ? player.character.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')
+                    : '';
+
+                const characterHtml = player.character ? `
+                    <img src="./char/${characterNameFormatted}.png" 
+                         alt="${player.character}" 
+                         class="w-[5vw] h-[5vw] max-w-24 max-h-24 object-contain mr-8 rounded-full shadow-lg"
+                         onerror="this.onerror=null; this.src='https://placehold.co/96x96/444/fff?text=?';" 
+                    />
+                ` : '';
+
+
+                const playerHtml = `
+                    <div class="ranking-item ${paddingClass} rounded-2xl flex items-center ${rowBgClass}">
+                        
+                        ${rankBlockHtml}
+                        
+                        <!-- Player Name and Character Image -->
+                        <div class="flex-grow text-left flex items-center">
+                            ${characterHtml}
+                            <span class="${nameTextSize} ${nameColorClass} truncate">
+                                ${player.name}
+                            </span>
+                        </div>
+                        
+                        <!-- NEW: Combined Score Block (GPScore™ dominant) -->
+                        <div class="w-2/5 text-right font-extrabold ml-10 flex flex-col items-end">
+                            <!-- GPScore™ (MAIN FOCUS) -->
+                            <div class="flex flex-col items-end w-full">
+                                <span class="text-4xl font-semibold opacity-75 text-star-yellow/90 uppercase">GPScore™</span>
+                                <span class="${mainScoreSize} text-star-yellow mt-1 drop-shadow-lg">
+                                    ${player.gps}
+                                </span>
+                            </div>
+
+                            <!-- Total Score (Secondary Focus, smaller and under) -->
+                            <div class="flex flex-col items-end w-full mt-4">
+                                <span class="text-3xl font-semibold opacity-60 ${isTop3 ? 'text-white/80' : 'text-mario-red'}">Total Score</span>
+                                <span class="${secondaryScoreSize} ${isTop3 ? 'text-white' : 'text-mario-red'} mt-1 opacity-90">
+                                    ${player.tps}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += playerHtml;
+            });
+        }
+
+        // Run on page load
+        window.onload = renderRankings;
+
+    </script>
+</head>
+<body class="p-[5vw] text-white bg-transparent">
+    <!-- Main content wrapper. It adapts to the screen size (w-full) but won't grow past the target info screen size (max-width/height). -->
+    <div id="content-wrapper" class="w-full h-full flex flex-col bg-transparent mx-auto" 
+         style="max-width: 2048px; max-height: 2560px;">
+        
+        <!-- Header Section -->
+        <header class="text-center mb-[5vw] p-[3vw] rounded-3xl shadow-2xl" 
+                style="background-image: linear-gradient(135deg, rgba(228, 0, 23, 0.9), rgba(0, 71, 192, 0.9));">
+            <h1 class="text-8xl font-black tracking-tighter uppercase text-white drop-shadow-lg">
+                <span class="text-star-yellow mr-8">🍄</span> CDN Driftsmidler Mario Kart
+            </h1>
+            <p class="text-5xl mt-4 font-black text-white">Season 0</p>
+            <p class="text-3xl mt-2 font-medium text-white/90">
+                Data refreshed: <span id="last-updated-time"></span>
+            </p>
+        </header>
+
+        <!-- Leaderboard Container -->
+        <main id="leaderboard-container" class="flex-grow flex flex-col">
+            <!-- Rankings will be injected here by JavaScript -->
+        </main>
+        
+        <!-- Footer / Legend -->
+        <footer class="text-center mt-[3vw] p-[1.5vw] rounded-xl bg-black/50">
+            <p class="text-2xl font-light opacity-70">
+                Rankings based on accumulated GPScore™ from official weekly races. GPScore™ is a CDN innovation, patent pending.
+            </p>
+        </footer>
+
+    </div>
+</body>
+</html>

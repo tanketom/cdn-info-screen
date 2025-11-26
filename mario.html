@@ -129,7 +129,7 @@
                 let characterHtmlForNameBlock = ''; // Initialize empty
 
                 if (isTop3) {
-                    // Top 3: Colored Circle Badge with character face (Requested change applied here)
+                    // Top 3: Colored Circle Badge with character face
                     const badgeClass = badgeStyles[player.rank];
                     rankBlockHtml = `
                         <!-- Rank Badge (Colored Circle with Character Face) -->
@@ -141,14 +141,8 @@
                         </div>
                     `;
                     
-                    // Ranks 1-3 still show the character image next to the name (for strong visual identity)
-                    characterHtmlForNameBlock = player.character ? `
-                        <img src="./gfx/${characterNameFormatted}.png" 
-                             alt="${player.character}" 
-                             class="w-[5vw] h-[5vw] max-w-24 max-h-24 object-contain mr-8 rounded-full shadow-lg"
-                             onerror="this.onerror=null; this.src='https://placehold.co/96x96/444/fff?text=?';" 
-                        />
-                    ` : '';
+                    // Ranks 1-3: Character image is now ONLY in the badge. This is set to empty string to remove redundancy.
+                    characterHtmlForNameBlock = ''; 
 
 
                 } else {
@@ -172,7 +166,7 @@
                         
                         ${rankBlockHtml}
                         
-                        <!-- Player Name and Character Image -->
+                        <!-- Player Name (Character image removed from here for all ranks) -->
                         <div class="flex-grow text-left flex items-center">
                             ${characterHtmlForNameBlock}
                             <span class="${nameTextSize} ${nameColorClass} truncate">
@@ -184,7 +178,7 @@
                         <div class="w-2/5 text-right font-extrabold ml-10 flex items-center justify-end">
                             <!-- GPScore™ (MAIN FOCUS: Large and Gold) -->
                             <div class="flex flex-col items-end mr-8">
-                                <span class="text-4xl font-semibold opacity-75 text-star-yellow/90 uppercase">GPScore™</span>
+                                <span class="text-4xl font-semibold opacity-75 text-star-yellow/90">GPScore™</span>
                                 <span class="${mainScoreSize} text-star-yellow mt-1 drop-shadow-lg">
                                     ${player.gps}
                                 </span>
@@ -217,8 +211,8 @@
         <!-- Header Section -->
         <header class="text-center mb-[5vw] p-[3vw] rounded-3xl shadow-2xl" 
                 style="background-image: linear-gradient(135deg, rgba(228, 0, 23, 0.9), rgba(0, 71, 192, 0.9));">
-            <h1 class="text-8xl font-black tracking-tighter uppercase text-white drop-shadow-lg">
-                <span class="text-star-yellow mr-8">🍄</span> CDN Driftsmidler Mario Kart
+            <h1 class="text-8xl font-black tracking-tighter text-white drop-shadow-lg">
+                CDN Driftsmidler Mario Kart Tournament
             </h1>
             <!-- Season is pulled dynamically -->
             <p id="current-season" class="text-5xl mt-4 font-black text-white">Season 0</p>
@@ -235,7 +229,7 @@
         <!-- Footer / Legend -->
         <footer class="text-center mt-[3vw] p-[1.5vw] rounded-xl bg-black/50">
             <p class="text-2xl font-light opacity-70">
-                Rankings based on accumulated GPScore™ from official weekly races. GPScore™ is a CDN innovation, patent pending.
+                Rankings based on accumulated GPScore™ from official weekly races and a masterful amount of math, especially for a humanist faculty project. GPScore™ is wholly a CDN innovation, patent pending.
             </p>
         </footer>
 

@@ -110,36 +110,38 @@
                 const nameColorClass = 'text-white font-extrabold';
                 
                 // Note: Replaces spaces in character name with title-casing for URL safety and uses the new /gfx/ path.
+                // The regex handles camel-casing for file lookup (e.g., "Donkey Kong" -> "DonkeyKong")
                 const characterNameFormatted = player.character 
-                    ? player.character.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')
+                    ? player.character.replace(/\s/g, '').replace(/./, c => c.toUpperCase())
                     : '';
                 
-                // Base HTML for character image used in the rank block for Ranks 4+
+                // Base HTML for character image to be used inside the circular containers (Ranks 1-9)
                 const charImgElement = player.character ? `
                     <img src="./gfx/${characterNameFormatted}.png" 
                          alt="${player.character}" 
-                         class="w-full h-full object-contain"
+                         class="w-full h-full object-cover"
                          onerror="this.onerror=null; this.src='https://placehold.co/144x144/444/fff?text=?';" 
                     />
-                ` : `<div class="w-full h-full bg-gray-600 rounded-full flex items-center justify-center text-4xl">?</div>`;
+                ` : `<div class="w-full h-full bg-gray-600 rounded-full flex items-center justify-center text-4xl text-white">?</div>`;
 
 
                 let rankBlockHtml;
                 let characterHtmlForNameBlock = ''; // Initialize empty
 
                 if (isTop3) {
-                    // Top 3: Colored Circle Badge with rank number
+                    // Top 3: Colored Circle Badge with character face (Requested change applied here)
                     const badgeClass = badgeStyles[player.rank];
                     rankBlockHtml = `
-                        <!-- Rank Badge (Colored Circle) -->
+                        <!-- Rank Badge (Colored Circle with Character Face) -->
                         <div class="w-[10rem] text-center flex justify-center items-center mr-10">
-                            <div class="w-36 h-36 rounded-full flex items-center justify-center ${badgeClass} shadow-2xl">
-                                <span class="text-7xl font-black">${player.rank}</span>
+                            <!-- p-2 added for a slight colored border effect -->
+                            <div class="w-36 h-36 rounded-full overflow-hidden flex items-center justify-center ${badgeClass} p-2 shadow-2xl">
+                                ${charImgElement}
                             </div>
                         </div>
                     `;
                     
-                    // Ranks 1-3 still show the character image next to the name (consistent with previous request)
+                    // Ranks 1-3 still show the character image next to the name (for strong visual identity)
                     characterHtmlForNameBlock = player.character ? `
                         <img src="./gfx/${characterNameFormatted}.png" 
                              alt="${player.character}" 
@@ -150,10 +152,9 @@
 
 
                 } else {
-                    // Ranks 4-10: Display the Character Image in the rank block location (replacing the number)
+                    // Ranks 4-10: Display the Character Image in the rank block location
                     rankBlockHtml = `
                         <!-- Character Face as Rank Identifier (Ranks 4+) -->
-                        <!-- Use w-[10rem] and mr-10 to match the positioning of the Top 3 badge container -->
                         <div class="w-[10rem] text-center flex justify-center items-center mr-10">
                             <div class="w-36 h-36 rounded-full overflow-hidden flex items-center justify-center bg-gray-700 p-2 shadow-lg">
                                 ${charImgElement}
@@ -183,7 +184,7 @@
                         <div class="w-2/5 text-right font-extrabold ml-10 flex items-center justify-end">
                             <!-- GPScore™ (MAIN FOCUS: Large and Gold) -->
                             <div class="flex flex-col items-end mr-8">
-                                <span class="text-4xl font-semibold opacity-75 text-star-yellow/90">GPScore™</span>
+                                <span class="text-4xl font-semibold opacity-75 text-star-yellow/90 uppercase">GPScore™</span>
                                 <span class="${mainScoreSize} text-star-yellow mt-1 drop-shadow-lg">
                                     ${player.gps}
                                 </span>
@@ -216,8 +217,8 @@
         <!-- Header Section -->
         <header class="text-center mb-[5vw] p-[3vw] rounded-3xl shadow-2xl" 
                 style="background-image: linear-gradient(135deg, rgba(228, 0, 23, 0.9), rgba(0, 71, 192, 0.9));">
-            <h1 class="text-8xl font-black tracking-tighter text-white drop-shadow-lg">
-                CDN Driftsmidler Mario Kart
+            <h1 class="text-8xl font-black tracking-tighter uppercase text-white drop-shadow-lg">
+                <span class="text-star-yellow mr-8">🍄</span> CDN Driftsmidler Mario Kart
             </h1>
             <!-- Season is pulled dynamically -->
             <p id="current-season" class="text-5xl mt-4 font-black text-white">Season 0</p>

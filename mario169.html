@@ -48,23 +48,15 @@
             transform: scale(1.005);
         }
         
-        /* Keyframes for the slow, alternate scrolling (Down, then Up, Repeat) */
-        @keyframes slow-scroll {
-            0% { transform: translateY(0); }
-            /* Adjusted percentage: 55% assumes about 6-7 items fit, requiring scrolling of the last 30-50% */
-            100% { transform: translateY(-50%); } 
-        }
+        /* SCROLLING REMOVED: Removed @keyframes slow-scroll */
 
         /* Apply the scrolling animation to the inner container */
         #scrolling-list-inner {
-            animation: slow-scroll 60s linear infinite alternate; /* Down, then Up, Repeat */
+            /* SCROLLING REMOVED: Removed animation property */
             padding-bottom: 0; 
         }
         
-        /* Pause scroll on hover */
-        #scrolling-list:hover #scrolling-list-inner {
-            animation-play-state: paused;
-        }
+        /* SCROLLING REMOVED: Removed hover pause style */
     </style>
     <script>
         tailwind.config = {
@@ -82,7 +74,7 @@
             }
         }
 
-        const rankingData = { lastUpdated: "November 28, 2025", season: "Season 0", rankings: [{rank:1,name:"Tim",tps:215,gps:55.75,character:"Yoshi"},{rank:2,name:"Magnus",tps:94,gps:48,character:"DryBones"},{rank:3,name:"Ola",tps:138,gps:47,character:"Luigi"},{rank:4,name:"Tegan",tps:91,gps:46.5,character:"DonkeyKong"},{rank:5,name:"Jack",tps:157,gps:41.25,character:"DonkeyKong"},{rank:6,name:"Dom",tps:77,gps:39.5,character:"ShyGuy"},{rank:7,name:"Tom",tps:224,gps:39.33,character:"BabyRosalina"},{rank:8,name:"Andreas",tps:240,gps:36.28,character:"Yoshi"},{rank:9,name:"Hanna",tps:131,gps:34.75,character:"DonkeyKong"},{rank:10,name:"Carlota",tps:0,gps:0,character:""}] };
+        const rankingData = { lastUpdated: "November 28, 2025", season: "Season 0", rankings: [{rank:1,name:"Tim",tps:215,gps:55.75,character:"Yoshi"},{rank:2,name:"Magnus",tps:94,gps:48,character:"DryBones"},{rank:3,name:"Ola",tps:138,gps:47,character:"Luigi"},{rank:4,name:"Tegan",tps:91,gps:46.5,character:"DonkeyKong"},{rank:5,name:"Jack",tps:157,gps:41.25,character:"DonkeyKong"},{rank:6,name:"Dom",tps:77,gps:39.5,character:"ShyGuy"},{rank:7,name:"Tom",tps:224,gps:39.3333333333333,character:"BabyRosalina"},{rank:8,name:"Andreas",tps:240,gps:36.2857142857143,character:"Yoshi"},{rank:9,name:"Hanna",tps:131,gps:34.75,character:"DonkeyKong"},{rank:10,name:"Carlota",tps:0,gps:0,character:""}] };
 
         const badgeStyles = {
             1: 'bg-gold-badge text-black',
@@ -207,7 +199,7 @@
                 podiumContainer.innerHTML += createRankingItem(player, true);
             });
 
-            // 2. Render Scrolling List (Ranks 4+)
+            // 2. Render Static List (Ranks 4+)
             let scrollingListHtml = '';
             scrollingRanks.forEach(player => {
                 scrollingListHtml += createRankingItem(player, false);
@@ -248,17 +240,15 @@
             </section>
         </div>
 
-        <!-- === RIGHT COLUMN: SCROLLING RANKS (4+) === -->
+        <!-- === RIGHT COLUMN: STATIC RANKS (4+) === -->
         <div id="scrolling-column">
-            <!-- Scrolling Ranks Section (Ranks 4+) -->
+            <!-- Static Ranks Section (Ranks 4+) -->
             <section id="scrolling-list" class="flex-grow overflow-hidden relative rounded-xl bg-gray-900/50">
-                <h2 class="text-3xl lg:text-4xl font-extrabold text-white text-center p-4">Ranks 4+</h2>
-                <!-- This inner container is the one that moves up and down -->
+                <!-- Removed: <h2 class="text-3xl lg:text-4xl font-extrabold text-white text-center p-4">Ranks 4+</h2> -->
+                <!-- This inner container is now static -->
                 <div id="scrolling-list-inner" class="space-y-4 p-4">
-                    <!-- Scrolling rankings will be injected here -->
+                    <!-- Rankings 4+ will be injected here -->
                 </div>
-                <!-- Gradient overlay to mask the bottom edge during scrolling -->
-                <div class="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-gray-900/50 to-transparent pointer-events-none"></div>
             </section>
         </div>
         

@@ -88,16 +88,14 @@
         };
         
         function formatCharacterNameForUrl(name) {
-            // Converts names like "Donkey Kong" to "DonkeyKong" for placeholder text/image path
-            // Note: Since the new data uses concatenated names (e.g., "DryBones"), the placeholder 
-            // text will also reflect the concatenated name.
+            // Converts names like "Donkey Kong" to "DonkeyKong" for local file paths
             return name ? name.replace(/\s/g, '').replace(/./, c => c.toUpperCase()) : 'Unknown';
         }
 
         function getCharacterImageUrl(characterName) {
             const formattedName = formatCharacterNameForUrl(characterName);
-            // Using a dynamic placeholder URL instead of local files
-            return `https://placehold.co/144x144/2d3748/fff?text=${formattedName}`;
+            // Reverting to local image URL structure (e.g., expected to be in an /gfx/ directory)
+            return `./gfx/${formattedName}.png`;
         }
 
         function createRankingItem(player, isTop3) {
@@ -127,11 +125,13 @@
             const characterImgSrc = getCharacterImageUrl(player.character);
             
             // Base HTML for character image
+            // If the local image fails to load (onerror), it replaces the <img> tag 
+            // with a simple '?' div to keep the layout intact.
             const charImgElement = player.character ? `
                 <img src="${characterImgSrc}" 
                     alt="${player.character}" 
                     class="w-full h-full object-cover"
-                    onerror="this.onerror=null; this.src='https://placehold.co/144x144/444/fff?text=?';" 
+                    onerror="this.onerror=null; this.outerHTML='<div class=\\"w-full h-full bg-gray-600 rounded-full flex items-center justify-center text-4xl text-white\\">?</div>';" 
                 />
             ` : `<div class="w-full h-full bg-gray-600 rounded-full flex items-center justify-center text-4xl text-white">?</div>`;
 

@@ -15,47 +15,34 @@
             padding: 0;
             font-family: 'Inter', sans-serif;
             background-color: transparent; /* Mandatory transparent background */
-            overflow: hidden; /* Prevent scrolling the entire page */
+            overflow-y: auto; /* Allow scrolling if window is smaller than 2560px, but content is static */
         }
 
         /* Container to enforce max dimensions and center the content */
         #content-wrapper {
             max-width: 2048px;
             max-height: 2560px;
-            height: 100vh; /* Use full viewport height for fluid scaling */
-            /* Must be flex column for fixed header/footer and growing middle */
+            /* Using a minimum height to ensure container is visible, but not forcing 100vh */
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            /* Using fixed-unit padding to avoid exceeding 2560px height */
-            padding: 4rem; /* p-16 equivalent */
+            /* Reduced padding for more vertical space */
+            padding: 2rem; 
         }
         
         /* Custom styles for the Leaderboard layout */
         .ranking-item {
             transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 10px -2px rgba(0, 0, 0, 0.4); /* Slightly softer shadow */
         }
         .ranking-item:hover {
             transform: scale(1.005);
         }
         
-        /* Keyframes for the slow, alternate scrolling (Down, then Up, Repeat) */
-        @keyframes slow-scroll {
-            0% { transform: translateY(0); }
-            /* Adjusted percentage to stop when the last item is visible at the bottom 
-               (Approx. 55% of the list height is needed to scroll the last item into view) */
-            100% { transform: translateY(-55%); } 
-        }
-
-        /* Apply the scrolling animation to the inner container */
-        #scrolling-list-inner {
-            animation: slow-scroll 60s linear infinite alternate; /* Down, then Up, Repeat */
-            padding-bottom: 0; 
-        }
-        
-        /* Pause scroll on hover */
-        #scrolling-list:hover #scrolling-list-inner {
-            animation-play-state: paused;
+        /* Ensure the body doesn't add extra space beyond the wrapper */
+        body {
+            display: flex;
+            justify-content: center;
         }
 
     </style>
@@ -75,8 +62,8 @@
             }
         }
 
-        // Put ranking Output to website here
-        const rankingData = { lastUpdated: "December 04, 2025", season: "Season 0", rankings: [{rank:1,name:"Tim",tps:335,gps:58.83,character:"Yoshi"},{rank:2,name:"Carlota",tps:54,gps:55,character:"Villager"},{rank:3,name:"Dom",tps:518,gps:50.9,character:"Peach"},{rank:4,name:"Magnus",tps:94,gps:48,character:"DryBones"},{rank:5,name:"Tegan",tps:91,gps:46.5,character:"DonkeyKong"},{rank:6,name:"Tom",tps:611,gps:41.93,character:"BabyRosalina"},{rank:7,name:"Jack",tps:157,gps:41.25,character:"DonkeyKong"},{rank:8,name:"Ola",tps:336,gps:39.33,character:"Luigi"},{rank:9,name:"Andreas",tps:409,gps:35.25,character:"Yoshi"},{rank:10,name:"Hanna",tps:147,gps:32.4,character:"DonkeyKong"}] };
+        // Added a player with Rank 11 for testing the fit requirement (3 Podium + 8 Scrolling = 11 total)
+        const rankingData = { lastUpdated: "December 05, 2025", season: "Season 0", rankings: [{rank:1,name:"Tim",tps:440,gps:58,character:"Yoshi"},{rank:2,name:"Carlota",tps:54,gps:55,character:"Villager"},{rank:3,name:"Dom",tps:728,gps:51.93,character:"Peach"},{rank:4,name:"Magnus",tps:94,gps:48,character:"DryBones"},{rank:5,name:"Tegan",tps:91,gps:46.5,character:"DonkeyKong"},{rank:6,name:"Tom",tps:703,gps:42.76,character:"BabyRosalina"},{rank:7,name:"Jack",tps:157,gps:41.25,character:"DonkeyKong"},{rank:8,name:"Ola",tps:392,gps:38.5,character:"Luigi"},{rank:9,name:"Andreas",tps:513,gps:35.73,character:"Yoshi"},{rank:10,name:"Hanna",tps:147,gps:32.4,character:"DonkeyKong"},{rank:11,name:"Lina",tps:30,gps:16,character:"Toad"}] };
 
         // Defines the circle badge style for the top 3
         const badgeStyles = {
@@ -91,16 +78,29 @@
         }
 
         function createRankingItem(player, isTop3) {
-            // Define size classes for differentiation
-            const nameTextSize = isTop3 ? 'text-6xl md:text-7xl' : 'text-4xl md:text-5xl';
-            const paddingClass = isTop3 ? 'p-8 md:p-12 mb-6' : 'p-6 md:p-8 mb-4'; // Smaller spacing for scrolling list
             
-            // Score Size Classes for visual hierarchy
-            const mainScoreSize = isTop3 ? 'text-7xl md:text-9xl' : 'text-5xl md:text-7xl'; // Largest for GPScore™
-            const secondaryScoreSize = isTop3 ? 'text-4xl md:text-6xl' : 'text-3xl md:text-4xl'; // Smaller for Total Score
-            
-            // Use a standard dark background for all rows
-            const rowBgClass = isTop3 ? 'bg-gray-800' : 'bg-gray-900/90';
+            let nameTextSize, paddingClass, mainScoreSize, secondaryScoreSize, rowBgClass, charImgSizeClass, charImgRingClass;
+
+            // --- Reduced Sizes for 11-Row Fit ---
+            if (isTop3) {
+                // Podium (Ranks 1-3) - Moderately reduced
+                nameTextSize = 'text-5xl md:text-6xl';
+                paddingClass = 'p-4 md:p-6 mb-4';
+                mainScoreSize = 'text-6xl md:text-7xl';
+                secondaryScoreSize = 'text-3xl md:text-5xl';
+                charImgSizeClass = 'w-28 h-28 md:w-32 md:h-32'; // Was w-36/h-36
+                charImgRingClass = 'ring-4 ring-white/20';
+                rowBgClass = 'bg-gray-800';
+            } else {
+                // Ranks 4+ - Significantly reduced
+                nameTextSize = 'text-3xl md:text-4xl';
+                paddingClass = 'p-3 md:p-4 mb-2';
+                mainScoreSize = 'text-4xl md:text-5xl';
+                secondaryScoreSize = 'text-2xl md:text-3xl';
+                charImgSizeClass = 'w-20 h-20 md:w-24 md:h-24'; // Was w-32/h-32
+                charImgRingClass = '';
+                rowBgClass = 'bg-gray-900/90';
+            }
             
             // Enforce white and bold for all names
             const nameColorClass = 'text-white font-extrabold';
@@ -125,7 +125,7 @@
                 rankBlockHtml = `
                     <!-- Rank Badge (Colored Circle with Character Face) -->
                     <div class="w-32 md:w-40 text-center flex justify-center items-center mr-8 md:mr-10">
-                        <div class="w-24 h-24 md:w-36 md:h-36 rounded-full overflow-hidden flex items-center justify-center ${badgeClass} p-1 shadow-2xl ring-4 ring-white/20">
+                        <div class="${charImgSizeClass} rounded-full overflow-hidden flex items-center justify-center ${badgeClass} p-1 shadow-2xl ${charImgRingClass}">
                             ${charImgElement}
                         </div>
                     </div>
@@ -135,7 +135,7 @@
                 rankBlockHtml = `
                     <!-- Character Face as Rank Identifier (Ranks 4+) -->
                     <div class="w-32 md:w-40 text-center flex justify-center items-center mr-8 md:mr-10">
-                        <div class="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden flex items-center justify-center bg-gray-700 p-1 shadow-lg">
+                        <div class="${charImgSizeClass} rounded-full overflow-hidden flex items-center justify-center bg-gray-700 p-1 shadow-lg">
                             ${charImgElement}
                         </div>
                     </div>
@@ -159,7 +159,7 @@
                         
                         <!-- GPScore™ (MAIN FOCUS: Large and Gold) -->
                         <div class="flex flex-col items-end mr-6 md:mr-8">
-                            <span class="text-xl md:text-4xl font-semibold opacity-75 text-star-yellow/90 uppercase">GPScore™</span>
+                            <span class="text-lg md:text-2xl font-semibold opacity-75 text-star-yellow/90 uppercase">GPScore™</span>
                             <span class="${mainScoreSize} text-star-yellow mt-1 drop-shadow-lg">
                                 ${player.gps}
                             </span>
@@ -167,7 +167,7 @@
 
                         <!-- Total Score (Secondary Focus: Smaller, Gray, and to the right) -->
                         <div class="flex flex-col items-end">
-                            <span class="text-xl md:text-3xl font-semibold opacity-60 text-gray-500">Total Score</span>
+                            <span class="text-lg md:text-2xl font-semibold opacity-60 text-gray-500">Total Score</span>
                             <span class="${secondaryScoreSize} text-gray-400 mt-1 opacity-90">
                                 ${player.tps}
                             </span>
@@ -179,7 +179,8 @@
 
         function renderRankings() {
             const podiumContainer = document.getElementById('podium-list');
-            const scrollingContainer = document.getElementById('scrolling-list-inner');
+            // We use the same container for all ranks now that scrolling is removed
+            const allRanksContainer = document.getElementById('scrolling-ranks-list'); 
             const timeElement = document.getElementById('last-updated-time');
             const seasonElement = document.getElementById('current-season');
             
@@ -191,28 +192,27 @@
                 seasonElement.textContent = `${rankingData.season}`;
             }
 
-            if (!podiumContainer || !scrollingContainer) return;
+            if (!podiumContainer || !allRanksContainer) return;
 
             // Clear existing content
             podiumContainer.innerHTML = '';
-            scrollingContainer.innerHTML = '';
+            allRanksContainer.innerHTML = '';
             
             const podiumRanks = rankingData.rankings.filter(p => p.rank <= 3);
-            const scrollingRanks = rankingData.rankings.filter(p => p.rank > 3);
+            const otherRanks = rankingData.rankings.filter(p => p.rank > 3);
 
             // 1. Render Podium (Ranks 1-3)
             podiumRanks.forEach(player => {
                 podiumContainer.innerHTML += createRankingItem(player, true);
             });
 
-            // 2. Render Scrolling List (Ranks 4+)
-            let scrollingListHtml = '';
-            scrollingRanks.forEach(player => {
-                scrollingListHtml += createRankingItem(player, false);
+            // 2. Render Remaining List (Ranks 4+)
+            let otherListHtml = '';
+            otherRanks.forEach(player => {
+                otherListHtml += createRankingItem(player, false);
             });
             
-            // Only insert the content once
-            scrollingContainer.innerHTML = scrollingListHtml;
+            allRanksContainer.innerHTML = otherListHtml;
         }
 
         // Run on page load
@@ -221,41 +221,36 @@
     </script>
 </head>
 <body class="bg-transparent text-white">
-    <!-- Main content wrapper. Enforces the height constraint and uses fixed padding. -->
-    <div id="content-wrapper" class="mx-auto" 
-         style="max-width: 2048px; max-height: 2560px;">
+    <!-- Main content wrapper. Enforces the max size constraint and uses reduced padding. -->
+    <div id="content-wrapper" class="mx-auto">
         
         <!-- Header Section (Fixed) -->
-        <header class="text-center mb-16 p-12 rounded-3xl shadow-2xl flex-shrink-0" 
+        <header class="text-center mb-8 p-8 rounded-3xl shadow-2xl flex-shrink-0" 
                 style="background-image: linear-gradient(135deg, rgba(228, 0, 23, 0.9), rgba(0, 71, 192, 0.9));">
-            <h1 class="text-6xl md:text-8xl font-black tracking-tighter text-white drop-shadow-lg">
+            <h1 class="text-5xl md:text-7xl font-black tracking-tighter text-white drop-shadow-lg">
                 CDN Driftsmidler League
             </h1>
             <!-- Season is pulled dynamically -->
-            <p id="current-season" class="text-4xl md:text-5xl mt-4 font-black text-white">Season 0</p>
-            <p class="text-2xl md:text-3xl mt-2 font-medium text-white/90">
+            <p id="current-season" class="text-3xl md:text-4xl mt-3 font-black text-white">Season 0</p>
+            <p class="text-xl md:text-2xl mt-1 font-medium text-white/90">
                 Data refreshed: <span id="last-updated-time"></span>
             </p>
         </header>
 
         <!-- Fixed Podium Section (Ranks 1-3) -->
-        <section id="podium-list" class="flex-shrink-0 mb-6 space-y-4">
+        <section id="podium-list" class="flex-shrink-0 mb-4 space-y-4">
             <!-- Podium rankings will be injected here -->
         </section>
 
-        <!-- Scrolling Ranks Section (Ranks 4+) -->
-        <section id="scrolling-list" class="flex-grow overflow-hidden relative">
-            <!-- This inner container is the one that moves up and down -->
-            <div id="scrolling-list-inner" class="space-y-4">
-                <!-- Scrolling rankings will be injected here -->
-            </div>
-            <!-- Gradient overlay to mask the bottom edge during scrolling -->
-            <div class="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black to-transparent pointer-events-none"></div>
+        <!-- All Other Ranks Section (Ranks 4+ - Now static) -->
+        <!-- Renamed ID to better reflect static content. The inner wrapper is no longer needed. -->
+        <section id="scrolling-ranks-list" class="space-y-2">
+            <!-- All remaining rankings will be injected here -->
         </section>
         
         <!-- Footer / Legend (Fixed) -->
-        <footer class="text-center mt-12 p-8 rounded-xl bg-black/50 flex-shrink-0">
-            <p class="text-xl md:text-2xl font-light opacity-70">
+        <footer class="text-center mt-6 p-4 rounded-xl bg-black/50 flex-shrink-0">
+            <p class="text-lg md:text-xl font-light opacity-70">
                 Rankings based on accumulated GPScore™ from official weekly races and a masterful amount of math, especially for a humanist faculty project. GPScore™ is wholly a CDN innovation, patent pending.
             </p>
         </footer>
